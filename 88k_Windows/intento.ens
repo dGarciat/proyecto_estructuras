@@ -1,0 +1,31 @@
+DBNZ:MACRO(ra,etiq)
+	sub ra, ra, 1
+	cmp r4, ra, r0
+	bb0 eq, r4, etiq
+ENDMACRO
+;--------------------------------------------------------------------------------------------------------------------------------------------------------------
+org 0
+ppal:		or 		r20, r0, low(N)
+			or.u 	r20, r20, high(N)
+			or 		r21, r0, low(SUMDOS)
+			or.u 	r21, r21, high(SUMDOS)
+			or		r22, r0, low(REST)
+			or.u	r22, r22, high(REST)
+			and 	r10,r10, r10;	contador
+			ld		r5, r20, 0		;se carga N
+			BUC:		ld 		r11, r21, 0
+						addu.co r10, r12, r11 	;hay que controlar que no haya desbordamiento
+						ldcr 	r4			  	;cargamos registro de control para ver que ha pasado con la operacion
+						bb1 	28, r4, OVF		;el bit 28 nos indica el acarreo
+						add		r21, r21, 4		;desplazamos puntero
+						cmp		r4, r10, r5		;comparamos contador con N elementos
+						DBNZ(r5,BUC)
+			st 		r22, r10, 0
+			xor 	r30, r30, r30
+			br		FIN
+OVF:		add		r30, r0, -1					;indicamos que ha habido desbordamiento						
+FIN:		stop
+			org 100
+N: 			data 5
+SUMDOS:		data 0x80000000, 24, 0x2fffffff, 0, 3
+REST:		data 0

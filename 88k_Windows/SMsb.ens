@@ -1,0 +1,82 @@
+LEA: MACRO (ra, eti)
+or ra, r0, low(eti)
+or.u ra, ra, high(eti)
+ENDMACRO
+;
+LOAD: MACRO (ra, eti)
+LEA (ra, eti)
+ld ra, ra, r0
+ENDMACRO
+;
+DBNZ: MACRO (ra,eti)
+sub ra,ra,1
+cmp r5,ra,0
+bb0 2,r5,eti
+ENDMACRO
+;
+PUSH: MACRO (ra)
+subu r30, r30, 4
+st ra, r30, 0
+ENDMACRO
+;
+POP: MACRO (ra)
+ld ra, r30, 0
+addu r30, r30, 4
+ENDMACRO
+;
+;DATOS PROBLEMA
+org 1008
+FILAS: data 5, 0
+COLUMNAS: data 4, 0
+MATRIZ: data 0xc000000b, 0xc000000a, 0xc0000009, 0xc0000008
+data 0xc0000007, 0xc0000006, 0xc0000005, 0xc0000004
+data 0xc0000003, 0xc0000002, 0xc0000001, 0xc0000000
+data 0xe000000b, 0xe000000a, 0xe0000009, 0xe0000008
+data 0xe0000007, 0xe0000006, 0xe0000005, 0xe0000004
+VSUMA: res 32
+;
+org 0
+LEA		(r30, 60000)													; Inicializacion del puntero de pila
+LEA(r2, VSUMA)
+PUSH(r2)
+LOAD(r2, FILAS)
+PUSH(r2)
+LOAD(r2, COLUMNAS)
+PUSH(r2)
+LEA(r2, MATRIZ)
+PUSH(r2)
+bsr SMsb
+stop
+SMsb:			PUSH	(r1)											;guardo dir de retorno
+				PUSH	(r31)											;guardo FP antiguo
+				or 		r31, r30, r0									;nuevo  FP
+																		;ponemos a 0 resultado
+				ld		r10, r31, 20									;cargamos puntero a VSUMA
+				ld		r8,  r31, 12									;cargamos columnas
+				RESET:				st		r0,  r10, 0
+									st		r0,  r10, 4
+									add		r10, r10, 8
+									DBNZ	(r8, RESET)
+
+				ld		r7,  r31, 16									;cargamos filas
+				ld		r15, r31, 8										;cargamos puntero matriz
+				SFIL:				ld		r8,  r31, 12				;cargamos columnas
+									ld		r10, r31, 20				;cargamos puntero a VSUMA
+				SCOL:				ld		r16, r15, 0					;cargamos valor columnas
+									ld 		r11, r10, 0					;cargamos valor VSUMA
+									addu.co	r11, r16, r11				;sumamos
+									st		r11, r10, 0					;guaramos primera parte de la suma
+									ld		r11, r10, 4					;cargamos segunda parte resultado
+									addu.ci r11, r11, r0					;sumamos acarreo
+									st 		r11, r10, 4					;guardamos en la segunda palabra resultado
+									add 	r10, r10, 8					;movemos puntero VSUMA
+									add		r15, r15, 4					;movemos puntero matriz
+									DBNZ	(r8, SCOL)
+									DBNZ	(r7, SFIL)
+				or 		r30, r31, r0
+				POP		(r31)
+				POP		(r1)
+				jmp	(r1)
+				
+				
+			

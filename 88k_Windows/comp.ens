@@ -1,0 +1,69 @@
+org 100
+IM1 :
+						data 		4, 8
+						data 		0x03052002, 0x11000006
+						data 		0x00000000, 0x01000000
+						data		0x05000000, 0x00000001
+						data		0x00000000, 0x00000000
+;						Matriz IM1: (hexadecimal y Little Endien)
+;						4 x 8
+;						01 20 05 03 00 00 00 00 / 00 00 05 00 - 00 00 00 05
+;						00 00 00 00 00 00 00 00
+;						00 00 00 05 01 00 00 00
+;						00 00 00 00 00 00 00 00
+;
+						IM2 :
+						data 		4, 8
+						data 		0x03052002, 0x11000002
+						data 		0x00000000, 0x00000001
+						data		0x05000000, 0x00000001
+						data		0x000A0000, 0x00000000
+;						Matriz IM1: (hexadecimal y Little Endien)
+;						4 x 8
+;						00 00 00 01 00 00 00 00
+;						00 00 00 00 01 00 00 00
+;						00 00 00 05 01 00 00 00
+;						00 00 00 0A 00 00 00 00
+;
+;
+LEA: 		MACRO (ra, eti)
+						or ra, r0, low(eti)
+						or.u ra, ra, high(eti)
+			ENDMACRO
+;
+LOAD: 		MACRO (ra, eti)
+						LEA (ra, eti)
+						ld ra, ra, r0
+			ENDMACRO
+;
+PPAL:		LEA(r20,IM1); direccion IM1
+						ld r2, r20, r0;Filas matriz 1
+						ld r3, r20, 4; Columnas matriz 1
+						or r4, r20, 8; Matriz 1
+						or r20, r0, r0
+			LEA(r20, IM2); direccion IM2
+						ld r5, r20, r0;Filas matriz 2
+						ld r6, r20, 4; Columnas matriz 2
+						or r7, r20, 8; Matriz 2
+						or r20, r0, r0; r20 a 0
+						or r29, r0, r0
+;Empiezo a probar cosas	
+						ld r13, r7, r0
+						;
+			comp_fila:	cmp r21, r20, 7
+						bb1 eq, r21, sig_fila
+						cmp r21, r22, 3
+						bb1 eq, r21, sig_pal
+						ld.bu r8, r4, r22
+						ld.bu r9, r7, r22
+;						sub r8, r8, r9
+						add r20, r20, 1
+						add r22, r22, 1
+;						add r29, r29, r8
+						br comp_fila
+			sig_fila: 	stop
+			sig_pal:	or r4, r4, 4
+						or r7, r7, 4
+						or r22, r0, r0
+						br comp_fila
+			

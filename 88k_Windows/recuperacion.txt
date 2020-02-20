@@ -1,0 +1,19 @@
+Comp:				ld 		r10, r30, 0											;cargamos direccion primera imagen
+					ld 		r20, r30, 4											;cargamos direccion segunda imagen
+					ld 		r11, r10, 0											;cargamos M
+					ld 		r21, r10, 4											;cargamos N
+					mulu	r8,  r11, r21										;MxN
+					or		r9,	 r8,  r0										;contador MxN
+					and		r29, r29, r0										;ponemos r29 a 0
+					addu 	r10, r10, 8											;colocamos puntero al principio de M1
+					addu	r20, r20, 8											;colocamos puntero al principio de M2
+BUCLE1:				ld.bu 	r11, r10, 0											;cargamos pixel M1
+					ld.bu	r21, r20, 0											;cargamos pixel M2
+					sub		r11, r11, r21										;r11 <- (pixelM1 - pixelM2)
+					muls	r11, r11, r11										;(pixelM1 - pixelM2)^2
+					addu    r29, r29, r11										; difT= difT + dif
+					addu	r10, r10, 1											;movemos puntero M1
+					addu    r20, r20, 1											;movemos puntero M2
+					DBNZ	(r9, BUCLE1)										;mientras no terminemos con todos los pixeles...
+					divu	r29, r29, r8										;dif/MxN
+					jmp		(r1)

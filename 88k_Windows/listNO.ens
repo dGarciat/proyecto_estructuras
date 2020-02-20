@@ -1,0 +1,35 @@
+LEA: MACRO (ra, eti)
+or ra, r0, low(eti)
+or.u ra, ra, high(eti)
+ENDMACRO
+;
+LOAD: MACRO (ra, eti)
+LEA (ra, eti)
+ld ra, ra, r0
+ENDMACRO
+;
+DBNZ: MACRO (ra,eti)
+sub ra,ra,1
+cmp r5,ra,0
+bb0 2,r5,eti
+ENDMACRO
+;
+org 1000
+NOMBRE: data 6,5,7,4,80,-1,0,-3,101,10
+org 2000
+LONG: data 10
+NUEVO: data 33
+;
+org 0
+LEA 		(r6, NOMBRE)	;cargamos lista
+LOAD		(r8,NUEVO)
+LOAD		(r9, LONG)
+cmp			r10, r9, r0
+bb1			eq, r10, INSERTAR
+BUC:		ld r7, r6, 0
+			cmp r10, r7, r8
+			bb1 eq, r10, FIN	;si son iguales no se inserta el elemento
+			add r6, r6, 4		;incrementamos el puntero
+			DBNZ (r9, BUC)
+INSERTAR: 	st r8, r6, 0		;insertamos
+FIN:		stop

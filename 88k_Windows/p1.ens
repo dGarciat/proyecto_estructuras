@@ -1,0 +1,37 @@
+			org 	0
+			nF: data 0x05000000
+;
+org 100				
+PPAL:		add r2, r0, 5
+			bsr nFiltrados
+			stop
+;
+PUSH: 		MACRO (ra)
+			st ra, r30, 0
+			sub r30,r30, 4
+	ENDMACRO
+POP:		MACRO (ra)
+			add r30, r30, 4
+			ld ra,r30,0
+	ENDMACRO
+LEA: 		MACRO(ra, eti)
+			or ra, r0, low(eti)
+			or ra, ra, high(eti)
+	ENDMACRO
+LOAD:		MACRO(ra, eti)
+			LEA (ra, eti)
+			ld ra, ra ,r0
+	ENDMACRO
+nFiltrados: PUSH(r1)
+			PUSH(r31)
+			or r31, r30, r0
+			subu r30, r30, 8
+			LOAD(r20, nF)
+			ld r20, r31, 4
+			st r2, r31, 8
+			add r29, r0, r20
+			;Destruimos marco de pila
+			or r30, r31, r0
+			POP(r31)
+			POP(r1)
+			jmp(r1)

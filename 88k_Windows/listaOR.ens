@@ -1,0 +1,48 @@
+LEA: MACRO (ra, eti)
+or ra, r0, low(eti)
+or.u ra, ra, high(eti)
+ENDMACRO
+;
+LOAD: MACRO (ra, eti)
+LEA (ra, eti)
+ld ra, ra, r0
+ENDMACRO
+;
+DBNZ: MACRO (ra,eti)
+sub ra,ra,1
+cmp r5,ra,0
+bb0 2,r5,eti
+ENDMACRO
+;
+org 1000
+LISTOR: data 1,3,7,45,56,67,101,200
+org 2000
+LONLIS: data 8
+NUEVO: data 90
+org 0
+LOAD		(r6, NUEVO) 				;nuevo elem
+LOAD		(r7, LONLIS)				;longitud de la lista
+LEA			(r8, LISTOR)				;puntero a la lista
+cmp 		r10, r7, 0					;si la lista esta vacia insertamos
+bb1			eq, r10, CARGAR
+BUC:		ld r11, r8 ,0				;cargamos elemento de la lista
+			cmp r10, r11, r6			;comparamos elemento con nuevo elemento
+			bb1 hi, r10, INSERTAR		;si el elemento que revisamos es mayot lo tenemos que introducir en su pos
+			add r8, r8, 4				;incrementamos puntero
+			DBNZ (r7, BUC)
+			br CARGAR
+INSERTAR:	st r6, r8, 0				;insertamos nuevo elem
+			or r6, r11, 0				;actualizamos el reg con el elemento que hemos borrado
+			ld r11, r8, 4				;guardo el siguiente elemento
+			add r8, r8 , 4				;incremento puntero
+			DBNZ(r7, INSERTAR)
+			st r6, r8, 0
+			br FIN
+CARGAR:		st r6, r8, 0
+FIN:		LEA(r3, LONLIS)
+			ld r6, r3, 0
+			add r6, r6, 1
+			st r6, r3, 0
+			stop
+			
+

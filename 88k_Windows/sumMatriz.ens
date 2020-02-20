@@ -1,0 +1,56 @@
+LEA: MACRO (ra, eti)
+or ra, r0, low(eti)
+or.u ra, ra, high(eti)
+ENDMACRO
+;
+LOAD: MACRO (ra, eti)
+LEA (ra, eti)
+ld ra, ra, r0
+ENDMACRO
+;
+DBNZ: MACRO (ra,eti)
+sub ra,ra,1
+cmp r5,ra,0
+bb0 2,r5,eti
+ENDMACRO
+;
+;DATOS PROBLEMA
+org 1008
+FILAS: data 5, 0
+COLUMNAS: data 4, 0
+MATRIZ: data 0xc000000b, 0xc000000a, 0xc0000009, 0xc0000008
+data 0xc0000007, 0xc0000006, 0xc0000005, 0xc0000004
+data 0xc0000003, 0xc0000002, 0xc0000001, 0xc0000000
+data 0xe000000b, 0xe000000a, 0xe0000009, 0xe0000008
+data 0xe0000007, 0xe0000006, 0xe0000005, 0xe0000004
+VSUMA: res 32
+;			
+LOAD		(r2, COLUMNAS)
+LEA			(r6,MATRIZ)					;puntero a matriz
+LEA			(r10, VSUMA)
+LOAD		(r3, FILAS)
+and			r8, r8, r8					;ponemos r8 a 0
+or			r9, r6, 0					;inicializamos puntero temporal
+			mulu r11, r2, 4				;calculamos el desplazamiento
+SUMCOLUM:	ld r7, r9, 0				;cargamos numero del puntero temporal
+			addu.co r15, r15, r7		;sumamos teniendo en cuenta el acarreo
+			addu.ci r16, r16, r0		;sumamos acarreo
+			add r9, r9, r11				;desplazamos puntero temporal
+			DBNZ(r3, SUMCOLUM)			;Aun quedan elementos por sumar
+			st r15, r10, 0
+			st r16, r10, 4				;cargamos el resultado
+			add r10, r10, 8				;actualizamos puntero resultado	
+			LOAD(r3, FILAS)				;reiniciamos contador FILAS
+			add r6, r6, 4				;desplazamos columna
+			or	r9, r6, 0				;inicializamos puntero temporal
+			and r15, r15, r0			;inicializamos a 0
+			and r16, r15, r0
+			DBNZ(r2, SUMCOLUM)			;Si N es 0 aun quedan columnas por sumar
+			
+FIN:		stop
+			
+			
+			
+			
+			
+

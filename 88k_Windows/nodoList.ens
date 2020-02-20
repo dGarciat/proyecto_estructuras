@@ -1,0 +1,54 @@
+LEA: MACRO (ra, eti)
+or ra, r0, low(eti)
+or.u ra, ra, high(eti)
+ENDMACRO
+;
+LOAD: MACRO (ra, eti)
+LEA (ra, eti)
+ld ra, ra, r0
+ENDMACRO
+;
+DBNZ: MACRO (ra,eti)
+sub ra,ra,1
+cmp r5,ra,0
+bb0 2,r5,eti
+ENDMACRO
+;DATOS
+org 1000
+CABECERA: data 2000
+NUEVO: data 2200
+;EJEMPLO PARA COMP
+org 2000
+data 2024,2
+org 2024
+data 2048,5
+org 2048
+data 2072,10
+org 2072
+data 2096,13
+org 2096
+data 0,15
+org 2200
+data 2112,7
+org 0
+LEA			(r2, CABECERA)	;puntero a la cabezera
+ld			r6, r2, 0		;puntero al primer nodo
+ld			r7, r6, 0		;puntero al nodo siguiente
+LOAD		(r3, NUEVO)		;nuevo nodo
+ld			r4, r3, 4		;cargamos el nº a insertar
+ld			r8, r6, 4		;cargamos elemento de ese nodo
+cmp			r10, r8, r4		; si el elemento es mayor que el nuevo elemento...
+bb1			hi, r10, INSERTAR1
+BUC:		ld r8, r7, 4			;cargamos nodo de delante
+			cmp r10, r8, r4			;si el elemento es mayor que el nuevo elemento...
+			bb1 hi, r10, INSERTAR
+			ld r6, r6, 0			;actualizamos punteros nodo 1
+			ld r7, r7, 0			;actualizamos punteros nodo 2
+			cmp r10, r7, r0			;comprobamos si hemos llegado al final de la lista
+			bb0 eq, r10, BUC		;si no hemos llegado al final de la lista volvemos
+INSERTAR:  	st r3, r6, 0
+			st r7, r3, 0
+			stop
+INSERTAR1:	st r3, r2, 0
+			st r6, r3, 0
+			stop
